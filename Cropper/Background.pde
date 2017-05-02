@@ -40,7 +40,7 @@ class Background
     // Background colour
     pushStyle();
     noStroke();
-    fill(200,200);
+    fill(230);
     rect(0,0,width,height);
     popStyle();
     // Intro message
@@ -49,11 +49,11 @@ class Background
     fill(0);
     textAlign(CENTER, CENTER);
     textSize(15);
-    text("DRAG & DROP AN IMAGE OR FOLDER TO BEGIN", width/2-100, height/2-150, 200, 200);
+    text("DRAG & DROP AN IMAGE OR FOLDER TO BEGIN", width/2-100, height/2-200, 200, 200);
     textAlign(CENTER, TOP);
     textSize(12);
-    text("Arrow Keys - Nudge Image\nMouse Wheel - Zoom & Pan\nF - Frame Image\n[ ] - Prev/Next Image\n\nHold Shift to increase nudge & zoom amount", 
-          width/2-100, height/2, 200, 200);
+    text("Arrow Keys - Nudge Image\nLeft/Right Mouse - Create/ Finish Shape\nMouse Wheel - Zoom & Pan\nF - Frame Image\n[ ] - Prev/Next Image\n\nHold Shift to increase nudge & zoom amount", 
+          width/2-125, height/2-50, 250, 200);
     popStyle();
     
     // Background_image
@@ -127,13 +127,13 @@ class Background
   // Navigation
   PVector screen_to_world(float x, float y)
   {
-    // Converts mouse window position into world space coordinates
+    // Converts window position into world space coordinates
     return new PVector((x-bg_transform.x)/bg_transform.z, (y-bg_transform.y)/bg_transform.z);
   }
   
   PVector world_to_screen(float x, float y)
   {
-    // Converts mouse window position into world space coordinates
+    // Converts world space coordinates into screen space position
     return new PVector((x*bg_transform.z)+bg_transform.x, (y*bg_transform.z)+bg_transform.y);
   }
   
@@ -192,7 +192,6 @@ class Background
     // Apply zoom correction
     PVector new_zoomed_position = world_to_screen(starting_mouse_position.x,starting_mouse_position.y);
     new_zoomed_position.sub(mouseX, mouseY);
-    println(new_zoomed_position);
     move(-new_zoomed_position.x, -new_zoomed_position.y);
   }
   
@@ -253,7 +252,6 @@ class Background
     // Mouse Wheel
     if(e.getAction() == 8)
     {
-      println(e.getCount());
       // Middle Mouse
       if(e.getCount() == 1)
       {
@@ -263,7 +261,6 @@ class Background
       {
         zoom(zoom_amt);
       }
-      println(bg_transform.z);
     }
     
     // Mouse Moved

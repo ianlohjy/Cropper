@@ -28,6 +28,7 @@ void draw()
 {
   background(0);
   background.draw();
+  crop_handler.draw();
   
   noStroke();
   fill(0);
@@ -41,7 +42,7 @@ void draw()
 // EVENTS //
 void pass_mouse_event(MouseEvent e)
 {
-  crop_handler.mouse_event(e);
+  crop_handler.mouse_events(e);
   background.mouse_events(e);
 }
 
