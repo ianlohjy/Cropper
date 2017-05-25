@@ -139,10 +139,22 @@ class Background
         return screen_to_world(vector.x, vector.y);
     }
 
+    float screen_to_world(float scale)
+    {
+        // Convenience overload method
+        return scale/bg_transform.z;
+    }
+
     PVector world_to_screen(float x, float y)
     {
         // Converts world space coordinates into screen space position
         return new PVector((x*bg_transform.z)+bg_transform.x, (y*bg_transform.z)+bg_transform.y);
+    }
+    
+    float world_to_screen(float scale)
+    {
+        // Converts world space coordinates into screen space position
+        return scale*bg_transform.z;
     }
 
     PVector world_to_screen(PVector vector)

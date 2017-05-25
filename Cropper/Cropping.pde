@@ -384,7 +384,7 @@ class Crop
                 } else 
                 {
                     strokeWeight(2);
-                    stroke((dist(mouse_vector.x, mouse_vector.y, point.x, point.y) < vertex_size)? 255 : 0);
+                    stroke(vertex_is_hit(point, mouse_vector)? 255 : 0);
                 }
                 // Converting coordinates so that they match the background transform
                 PVector wts_coords = background.world_to_screen(point.x, point.y); 
@@ -459,12 +459,17 @@ class Crop
     PVector crop_vertex_at_location(PVector location)
     {
         for (PVector p : points) {
-            if (dist(p.x, p.y, location.x, location.y) < vertex_size)
+            if (vertex_is_hit(p, location))
             {
                 return p;
             }
         }
         return null;
+    }
+    
+    boolean vertex_is_hit(PVector vertex, PVector location)
+    {
+            return dist(vertex.x, vertex.y, location.x, location.y) < background.screen_to_world(vertex_size);
     }
     
     PVector centre_point()
