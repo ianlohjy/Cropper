@@ -8,7 +8,7 @@ class CropImage
     
     PVector image_position = new PVector();
     PVector image_size = new PVector();
-    float image_rotation;
+    float image_rotation = 0;
     private PVector image_rotation_pivot_default = new PVector(0.5, 0.5); 
     PVector image_rotation_pivot_offset = new PVector(); // offset from normalized default position at 0.5, 0.5
     
@@ -27,14 +27,15 @@ class CropImage
         popStyle();
     }
     
-    public void drawImage(){
+    public void drawImage()
+    {
         PVector wts_coord = background.world_to_screen(image_position.x, image_position.y);
         float wts_scale = background.world_to_screen(1);
         image(image, wts_coord.x, wts_coord.y, image.width*wts_scale, image.height*wts_scale);
     }
     
-    public void regenerate_image(PImage base_image){
-        
+    public void regenerate_image(PImage base_image)
+    {
         PGraphics mask_graphics = createGraphics(ceil(image_size.x), ceil(image_size.y));
         mask_graphics.beginDraw();
         mask_graphics.background(0);

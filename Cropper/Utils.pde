@@ -1,14 +1,6 @@
-public static boolean isPointLeftOfLine(PVector a, PVector b, float x_input, float y_input)
-{
-  try
-  {
-    return ((b.x - a.x)*(y_input - a.y) - (b.y - a.y)*(x_input - a.x)) > 0;
-  }
-  catch(Exception e)
-  {
-    return false;
-  }  
-}
+import java.nio.channels.FileChannel;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 void uprintln(String message)
 {
@@ -72,5 +64,34 @@ class _Utils
     }
     return value % modulus;
   }
+  
+  String getExtension(File file){
+      String[] components = file.getName().split("\\.");
+      return components[components.length-1];
+  }
+  
+  public void copyFile(File sourceFile, File destFile) throws IOException {
+      println("Copying "+sourceFile.getAbsolutePath()+" to "+destFile.getAbsolutePath());
+    if(!destFile.exists()) {
+        destFile.createNewFile();
+    }
+
+    FileChannel source = null;
+    FileChannel destination = null;
+
+    try {
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        destination.transferFrom(source, 0, source.size());
+    }
+    finally {
+        if(source != null) {
+            source.close();
+        }
+        if(destination != null) {
+            destination.close();
+        }
+    }
+}
   
 }

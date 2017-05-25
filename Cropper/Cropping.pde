@@ -20,6 +20,12 @@ class CropHandler implements ModeDelegate
             crop.draw();
         }
     }
+    
+    void set_crops(ArrayList<Crop> crops){
+        deselect();
+        this.crops = crops;
+        println("CropHandler set crops, size: "+crops.size());
+    }
 
     /* Begin ModeDelegate interface functions*/
 
@@ -47,11 +53,12 @@ class CropHandler implements ModeDelegate
     {
         uprintln("### Creating new crop ###");
         // Todo: deselect & close all other crops
-        Crop new_crop = new Crop(this, position);
-        crops.add(new_crop);
+        Crop new_crop = new Crop(position);
+        this.crops.add(new_crop);
+        println("Added a new crop! New size: "+this.crops.size());
 
         active_crop = new_crop;
-        active_crop.open();
+        //active_crop.open();
     }
 
     void selectCrop(Crop c)
@@ -207,20 +214,49 @@ class Crop
 
     PVector selected_point;
     PVector selection_offset = new PVector();
-
-    CropHandler crop_handler;
     
-    CropImage crop_image; 
+    CropImage crop_image;
 
-    Crop(CropHandler crop_handler, PVector firstPoint)
+    Crop(PVector firstPoint)
     {
-        this.crop_handler = crop_handler;
         points = new ArrayList<PVector>();
         crop_image = new CropImage(this);
         open();
         add_point(firstPoint, -1);
     }
-
+    
+    Crop(JSONObject json){
+        points = new ArrayList<PVector>();
+        crop_image = new CropImage(this);
+        open();
+        JSONArray points_array = json.getJSONArray("points");
+        JSONObject point_object;
+        for(int i = 0; i<points_array.size(); i++){
+            point_object = points_array.getJSONObject(i);
+            float x = point_object.getFloat("x");
+            float y = point_object.getFloat("y");
+            add_point(new PVector(x, y), -1);
+        }
+        crop_image.image_rotation = json.getFloat("image_rotation");
+        crop_image.image_rotation_pivot_offset = new PVector(json.getFloat("image_rotation_pivot_offset_x"), json.getFloat("image_rotation_pivot_offset_y"));
+        close();
+    }
+    
+    JSONObject to_JSON(){
+        JSONObject json = new JSONObject();
+        JSONArray points_array = new JSONArray();
+        for(PVector point : points){
+            JSONObject point_object = new JSONObject();
+            point_object.setFloat("x", point.x);
+            point_object.setFloat("y", point.y);
+        }
+        json.setJSONArray("points", points_array);
+        json.setFloat("image_rotation", crop_image.image_rotation);
+        json.setFloat("image_rotation_pivot_offset_x", crop_image.image_rotation_pivot_offset.x);
+        json.setFloat("image_rotation_pivot_offset_y", crop_image.image_rotation_pivot_offset.y);
+        return json;
+    }
+    
     // Modes
     boolean is_open()
     {
@@ -395,7 +431,8 @@ class Crop
             popStyle();
 
             // Show crop index number at first point
-            PVector wts_coords = background.world_to_screen(points.get(0).x, points.get(0).y); 
+            PVector wts_coords = background.world_to_screen(points.get(0).x, points.get(0).y);
+            
             int index = crop_handler.crops.indexOf(this);
             float index_width = textWidth(Integer.toString(index)) + 5;
 

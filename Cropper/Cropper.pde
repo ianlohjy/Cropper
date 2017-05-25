@@ -1,13 +1,16 @@
 import controlP5.*;
 import drop.*;
-
 /*
 TO DO:
  - Exporting to JSON
  - Importing from JSON
  - Exporting masked images from crops
  
- */
+*/
+
+String OUTPUT_IMAGE_EXTENSION = "png";
+
+File OUTPUT_DIRECTORY;
 
 // UI
 ControlP5 cp; // Instantiate CP5 (gui)
@@ -18,7 +21,9 @@ Mode mode;
 
 // CROPPING
 CropHandler crop_handler;
-MaskHandler mask_handler;
+
+// Functions defined in Identification.pde
+ArrayList<CropIdentity> existing_crops;
 
 void settings()
 {
@@ -29,13 +34,15 @@ void setup()
 {
     surface.setResizable(true);
     surface.setSize(1000, 500);
+    OUTPUT_DIRECTORY = new File(sketchPath()+"/Output/");
+    println("Beginning, loading existing identities...");
+    load_identities(OUTPUT_DIRECTORY);
     Assets.load_assets();
     mode = new Mode();
     background = new Background();
     foreground = new Foreground();
     drop = new SDrop(this);
     crop_handler = new CropHandler();
-    mask_handler = new MaskHandler();
 }
 
 void draw()
@@ -72,6 +79,15 @@ void pass_key_events(KeyEvent e)
 void keyPressed(KeyEvent e)
 { 
     pass_key_events(e);
+    switch(key){
+        case 'o':
+        // load_identities defined in Identification.pde
+        selectFolder("Load Existing Crops...", "load_identities");
+        break;
+        case '0':
+        Application.display_identity_at_index(0);
+        break;
+    }
 }
 
 void keyReleased(KeyEvent e)

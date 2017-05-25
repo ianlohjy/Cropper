@@ -363,6 +363,13 @@ class Background
     {  
         load_background(cur_image_position-1);
     }
+    
+    void set_background_image(PImage image)
+    {
+        background_image = image;
+        //cur_image_position = position;
+        frame_background();
+    }
 
     // Utilities
     void load_background(int position)
@@ -391,60 +398,3 @@ class Background
     }
 } 
 // END OF BACKGROUND CLASS
-
-
-// File Drag & Drop Handling
-void dropEvent(DropEvent drop_event)
-{
-    if (drop_event.isFile())
-    {
-        // Contains information of the dropped content
-        File dropped_content = drop_event.file();
-
-        // For storing found files
-        File[] found_files = new File[0];
-        ArrayList<String> compatible_files = new ArrayList<String>();
-
-        // Check if the drop was a folder or file
-        if (dropped_content.isDirectory())
-        {
-            found_files = dropped_content.listFiles();
-        } else if (dropped_content.isFile())
-        {
-            found_files = new File[1];
-            found_files[0] = dropped_content.getAbsoluteFile();
-        } else {
-            return;
-        } // If no file dropped
-
-        // Check for compatible file formats
-        uprintln("\n### CHECKING FOR COMPATIBLE FILES ###");
-
-        for (File file : found_files)
-        {
-            String file_path = file.getAbsolutePath();
-            String file_format = (file_path.substring(file_path.lastIndexOf('.'), file_path.length())).toUpperCase();
-            // Added JPEG in here - if only for testing.
-            if (file_format.equals(".PNG") || file_format.equals(".JPG"))
-            {
-                compatible_files.add(file_path);
-                uprintln("  > " + compatible_files.get(compatible_files.size()-1));
-            }
-        }
-        if (compatible_files.size()==0)
-        {
-            uprintln("    NONE FOUND!");
-        } else
-        {
-            uprintln("    FOUND " + compatible_files.size() + " FILE(S)");
-        }
-
-        // Load in the first of the dropped images
-        background.load_image_paths(compatible_files);
-        if (compatible_files.size() > 0)
-        {
-            background.load_background(0);
-        }
-        uprintln("### DONE ###");
-    }
-}
