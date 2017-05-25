@@ -33,16 +33,11 @@ class CropHandler implements ModeDelegate
                 if (active_crop.state == active_crop.OPEN)
                 {
                     active_crop.close();
-                    active_crop = null;
                 }
             }
         }
-        if (mode == CREATING_MODE && old_mode != CREATING_MODE) {
-            // Entering creating mode from another mode
+        if(mode != SELECTION_MODE){
             deselect();
-        } else {
-            // Entering creating mode while within creating mode
-            deselect(); // , also
         }
     }
 
@@ -214,11 +209,14 @@ class Crop
     PVector selection_offset = new PVector();
 
     CropHandler crop_handler;
+    
+    CropImage crop_image; 
 
     Crop(CropHandler crop_handler, PVector firstPoint)
     {
         this.crop_handler = crop_handler;
         points = new ArrayList<PVector>();
+        crop_image = new CropImage(this);
         open();
         add_point(firstPoint, -1);
     }
@@ -342,6 +340,7 @@ class Crop
             if(selected_point != null && Input.mouse_down){
                 selected_point.x = mouse_vector.x - selection_offset.x;
                 selected_point.y = mouse_vector.y - selection_offset.y;
+                crop_image.update();
             }
             boolean mouse_is_inside = Utils.point_is_within_polygon(mouse_vector, points);
             strokeWeight(mouse_is_inside? 4 : 1);
@@ -371,6 +370,8 @@ class Crop
                 vertex(wts_coords.x, wts_coords.y);
             }
             endShape(CLOSE);
+            
+            crop_image.drawSkeleton();
 
             pushStyle();
             fill(0);
@@ -436,6 +437,7 @@ class Crop
         }
 
         selected_point = new_point;
+        crop_image.update();
         uprintln("    Adding Point " + position + "/" + (points.size()-1));
     }
 
@@ -452,6 +454,7 @@ class Crop
                 int new_selection_index = Utils.safeMod(points.indexOf(selected_point) - 1, points.size()-1);
                 points.remove(selected_point);
                 selected_point = (PVector) points.get(new_selection_index);
+                crop_image.update();
             }
         }
     }

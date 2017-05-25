@@ -18,6 +18,7 @@ Mode mode;
 
 // CROPPING
 CropHandler crop_handler;
+MaskHandler mask_handler;
 
 void settings()
 {
@@ -34,6 +35,7 @@ void setup()
     foreground = new Foreground();
     drop = new SDrop(this);
     crop_handler = new CropHandler();
+    mask_handler = new MaskHandler();
 }
 
 void draw()

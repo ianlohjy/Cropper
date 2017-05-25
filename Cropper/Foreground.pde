@@ -15,6 +15,14 @@ class Foreground implements ModeDelegate
       case SELECTION_MODE:
       break;
       case EDITING_MODE:
+      pushStyle();
+      noStroke();
+      fill(0, 70);
+      rect(0, 0, width, height);
+      popStyle();
+      for(Crop crop : crop_handler.crops){
+          crop.crop_image.drawImage();
+      }
       draw_grid(50, 50);
       break;
     }
@@ -24,11 +32,16 @@ class Foreground implements ModeDelegate
     switch(mode)
     {
       case SELECTION_MODE:
-      case EDITING_MODE:
       change_cursor(ARROW);
       break;
       case CREATING_MODE:
       change_cursor(CROSS);
+      break;
+      case EDITING_MODE:
+      for(Crop crop : crop_handler.crops){
+          crop.crop_image.regenerate_image(background.background_image);
+      }
+      change_cursor(ARROW);
       break;
     }
   }
