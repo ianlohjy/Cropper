@@ -53,7 +53,7 @@ class CropHandler implements ModeDelegate
     {
         uprintln("### Creating new crop ###");
         // Todo: deselect & close all other crops
-        Crop new_crop = new Crop(position);
+        Crop new_crop = new Crop(position, this.crops.size());
         this.crops.add(new_crop);
         println("Added a new crop! New size: "+this.crops.size());
 
@@ -74,6 +74,9 @@ class CropHandler implements ModeDelegate
 
     void deselect()
     {
+        if(active_crop != null){
+            active_crop.close();
+        }
         for (Crop c : crops) {
             c.deselect();
         }
@@ -216,9 +219,12 @@ class Crop
     PVector selection_offset = new PVector();
     
     CropImage crop_image;
+    
+    int crop_index;
 
-    Crop(PVector firstPoint)
+    Crop(PVector firstPoint, int crop_index)
     {
+        this.crop_index = crop_index;
         points = new ArrayList<PVector>();
         crop_image = new CropImage(this);
         open();
@@ -237,6 +243,7 @@ class Crop
             float y = point_object.getFloat("y");
             add_point(new PVector(x, y), -1);
         }
+        crop_index = json.getInt("crop_index");
         crop_image.image_rotation = json.getFloat("image_rotation");
         crop_image.image_rotation_pivot_offset = new PVector(json.getFloat("image_rotation_pivot_offset_x"), json.getFloat("image_rotation_pivot_offset_y"));
         close();
@@ -249,8 +256,10 @@ class Crop
             JSONObject point_object = new JSONObject();
             point_object.setFloat("x", point.x);
             point_object.setFloat("y", point.y);
+            points_array.append(point_object);
         }
         json.setJSONArray("points", points_array);
+        json.setInt("crop_index", crop_index);
         json.setFloat("image_rotation", crop_image.image_rotation);
         json.setFloat("image_rotation_pivot_offset_x", crop_image.image_rotation_pivot_offset.x);
         json.setFloat("image_rotation_pivot_offset_y", crop_image.image_rotation_pivot_offset.y);

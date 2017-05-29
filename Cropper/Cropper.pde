@@ -1,12 +1,5 @@
 import controlP5.*;
 import drop.*;
-/*
-TO DO:
- - Exporting to JSON
- - Importing from JSON
- - Exporting masked images from crops
- 
-*/
 
 String OUTPUT_IMAGE_EXTENSION = "png";
 
@@ -79,13 +72,28 @@ void pass_key_events(KeyEvent e)
 void keyPressed(KeyEvent e)
 { 
     pass_key_events(e);
+    
+    if(key == CODED){
+        switch(keyCode){
+            case LEFT:
+            Application.previous_identity();
+            break;
+            case RIGHT:
+            Application.next_identity();
+            break;
+        }
+    }
+    
     switch(key){
         case 'o':
         // load_identities defined in Identification.pde
-        selectFolder("Load Existing Crops...", "load_identities");
+        selectFolder("Load specific crop set...", "open_identity", OUTPUT_DIRECTORY);
         break;
         case '0':
         Application.display_identity_at_index(0);
+        break;
+        case 's':
+        Application.save_crops_for_current_identity();
         break;
     }
 }

@@ -325,13 +325,14 @@ class Background
                 frame_background();
                 break;
 
-            case 91: // [
-                prev_background();
-                break;
+            // This i=has moved to Application
+            //case 91: // [
+            //    prev_background();
+            //    break;
 
-            case 93: // ]
-                next_background();
-                break;
+            //case 93: // ]
+            //    next_background();
+            //    break;
 
             default:
                 break;

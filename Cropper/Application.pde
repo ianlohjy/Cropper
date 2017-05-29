@@ -1,13 +1,15 @@
-
+import java.util.LinkedHashMap;
 
 _Application Application = new _Application();
 
 class _Application
 {
     // original_file_name as key
-    HashMap<String, CropIdentity> identities = new HashMap<String, CropIdentity>();
+    LinkedHashMap<String, CropIdentity> identities = new LinkedHashMap<String, CropIdentity>();
     
     CropIdentity current_identity = null;
+    
+    int current_identity_index = 0;
     
     public _Application(){
         
@@ -42,24 +44,68 @@ class _Application
     void display_identity_at_index(int index)
     {
         CropIdentity[] identities_array = identities.values().toArray(new CropIdentity[0]);
-        if(identities_array.length == 0 || index >= identities_array.length){
+        if(identities_array.length == 0 || index >= identities_array.length || index < 0){
             println("Requested display at an invalid index: "+index+", identities.length: "+identities_array.length);
             return;
         }
-        CropIdentity identity = identities_array[index];
+        current_identity_index = index;
+        display_identity(identities_array[index]);
+    }
+    
+    void display_identity(CropIdentity identity){
         println("Displaying identity: "+identity.original_image_file_name);
         crop_handler.set_crops(identity.crops);
         background.set_background_image(loadImage(identity.base_image_path()));
+        current_identity = identity;
+        
+        // find the index
+        ArrayList keys = new ArrayList(identities.keySet());
+        for (int i = 0; i < keys.size(); i++) {
+            String id = (String) keys.get(i);
+            if(id.equals(current_identity.image_id)){
+                current_identity_index = i;
+                break;
+            }
+        }
     }
     
     void save_crops_for_current_identity()
     {
         // TODO
+        current_identity.save_to_output_directory();
+        println("Saved identity "+current_identity.image_id);
+    }
+    
+    void next_identity()
+    {
+        display_identity_at_index(current_identity_index + 1);
+    }
+    
+    void previous_identity()
+    {
+        display_identity_at_index(current_identity_index - 1);
+    }
+    
+    void open_specific_identity(File base_folder)
+    {
+        String id = base_folder.getName();
+        println("Requested custom open: "+id);
+        if(identities.containsKey(id)){
+            display_identity(identities.get(id));
+        } else {
+            println("ERROR: Specified folder is not loaded into Application: "+base_folder.getAbsolutePath());
+            // Maybe offer an option to load it in, if it's a valid format.
+        }
     }
     
     
 }
 
+void open_identity(File folder){
+    if(folder != null){
+        Application.open_specific_identity(folder);
+    }
+}
 
 void load_identities(File folder){
     if (folder == null){
