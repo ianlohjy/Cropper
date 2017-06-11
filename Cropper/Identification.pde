@@ -130,6 +130,12 @@ class CropIdentity
         
     }
     
+    void delete_crop_images(){
+        for(int i = 0; i<OUTPUT_IMAGE_EXTENSIONS.length; i++){
+            delete_old_files(OUTPUT_IMAGE_EXTENSIONS[i]);   
+        }
+    }
+    
     void delete_old_files(String extension){
         File crops_directory = new File(OUTPUT_DIRECTORY+"/"+image_id+"/"+"Crops/");
         if(crops_directory.exists()){

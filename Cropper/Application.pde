@@ -1,4 +1,5 @@
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 _Application Application = new _Application();
 
@@ -100,8 +101,15 @@ class _Application
         Application.current_identity.save_images();   
     }
     
-    void save_all_images(){
-        
+    void delete_all_crop_images(){
+        println("Beginning deletion of all crop images");
+        CropIdentity identity;
+        for(Map.Entry entry : identities.entrySet()){  
+           //System.out.println(m.getKey()+" "+m.getValue());
+           identity = (CropIdentity) entry.getValue();
+           identity.delete_crop_images();
+        }
+        println("Finished deletion of all crop images.");
     }
     
     void begin_busy(String message){

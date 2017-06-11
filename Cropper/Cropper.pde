@@ -134,9 +134,13 @@ void keyPressed(KeyEvent e)
         break;
         case 's':
         Application.save_info_for_current_identity();
-        case 'a':
-        exporter.begin();
-        break;
+        // There are useful but a little dangerous to keep bound to keys!
+        //case 'a':
+        //exporter.begin();
+        //break;
+        //case 'd':
+        //Application.delete_all_crop_images();
+        //break;
     }
 }
 
