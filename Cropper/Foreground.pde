@@ -25,6 +25,46 @@ class Foreground implements ModeDelegate
       }
       draw_grid(50, 50);
       break;
+      case CREATING_MODE:
+      if(mode.selection_tool == MARQUEE){
+          pushStyle();
+          strokeWeight(1);
+          stroke(0, 50);
+          line(0, mouseY, width, mouseY);
+          line(mouseX, 0, mouseX, height);
+          popStyle();
+      }
+      break;
+    }
+    pushStyle();
+    String mode_string = "";
+    switch(mode.current_mode){
+        case SELECTION_MODE:
+        mode_string = "SELECTION MODE";
+        break;
+        case CREATING_MODE:
+        mode_string = "CREATION MODE";
+        break;
+        case EDITING_MODE:
+        mode_string = "EDIT MODE";
+        break;
+    }
+    textAlign(CENTER);
+    fill(0);
+    text(mode_string, width*0.5+1, 21);
+    fill(255);
+    text(mode_string, width*0.5, 20);
+    popStyle();
+    if(Application.is_busy){
+        pushStyle();
+        fill(0, 80);
+        noStroke();
+        rect(0, 0, width, height);
+        fill(255);
+        textAlign(CENTER);
+        textSize(36);
+        text(Application.busy_message, width*0.5, height*0.5);
+        popStyle();
     }
   }
   
@@ -42,6 +82,9 @@ class Foreground implements ModeDelegate
           crop.crop_image.regenerate_image(background.background_image);
       }
       change_cursor(ARROW);
+      break;
+      case PANNING_MODE:
+      change_cursor(HAND);
       break;
     }
   }

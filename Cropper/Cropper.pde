@@ -1,12 +1,13 @@
 import controlP5.*;
 import drop.*;
 
-String OUTPUT_IMAGE_EXTENSION = "png";
+boolean AUTOSAVE = true;
+String[] OUTPUT_IMAGE_EXTENSIONS = {"png", "jpg"};
 
 File OUTPUT_DIRECTORY;
 
 // UI
-ControlP5 cp; // Instantiate CP5 (gui)
+ControlP5 cp5;
 SDrop drop;
 Background background;
 Foreground foreground;
@@ -15,27 +16,42 @@ Mode mode;
 // CROPPING
 CropHandler crop_handler;
 
-// Functions defined in Identification.pde
+Exporter exporter;
+
 ArrayList<CropIdentity> existing_crops;
+
+boolean displaying_identities_to_process = false;
 
 void settings()
 {
-    size(1000, 500);
+    size(1100, 800);
 }
 
 void setup()
 {
     surface.setResizable(true);
-    surface.setSize(1000, 500);
-    OUTPUT_DIRECTORY = new File(sketchPath()+"/Output/");
+    surface.setSize(1200, 800);
     println("Beginning, loading existing identities...");
-    load_identities(OUTPUT_DIRECTORY);
     Assets.load_assets();
     mode = new Mode();
     background = new Background();
     foreground = new Foreground();
     drop = new SDrop(this);
     crop_handler = new CropHandler();
+    
+    cp5 = new ControlP5(this);
+    cp5.addButton("choose_output_directory")
+    .setPosition(20, 20)
+    .setSize(150, 20);
+    cp5.addLabel("output_directory_label")
+    .setPosition(20, 50);
+    cp5.addLabel("identities_being_processed")
+    .setPosition(20, 70)
+    .setValueLabel("All identities processed.");
+    
+    exporter = new Exporter(this);
+    
+    set_output_directory(new File(sketchPath()+"/Output/"));
 }
 
 void draw()
@@ -52,6 +68,30 @@ void draw()
     textSize(12);
     textAlign(LEFT, TOP);
     text("FPS " + int(frameRate), 0, 0);
+    if(Application.remaining_new_identities_to_process > 0){
+        displaying_identities_to_process = true;
+        cp5.getController("identities_being_processed").setValueLabel("Processing identity "+Application.remaining_new_identities_to_process+" / "+Application.total_new_identities_to_process);
+    } else if (displaying_identities_to_process) {
+        displaying_identities_to_process = false;
+        cp5.getController("identities_being_processed").setValueLabel("All identities processed.");
+    }
+}
+
+// CONTROLP5 CAlLBACKS //
+
+void choose_output_directory(){
+    selectFolder("Select output directory", "set_output_directory");
+}
+
+void set_output_directory(File file){
+    if( file != null ){
+        println("Set output directory to "+file.getAbsolutePath());
+        Application.reset_application();
+        OUTPUT_DIRECTORY = new File(file.getAbsolutePath()+"/");
+        load_identities(OUTPUT_DIRECTORY);
+        cp5.getController("output_directory_label").setValueLabel(OUTPUT_DIRECTORY.getAbsolutePath());
+        Application.display_identity_at_index(0);
+    }
 }
 
 // EVENTS //
@@ -93,7 +133,9 @@ void keyPressed(KeyEvent e)
         Application.display_identity_at_index(0);
         break;
         case 's':
-        Application.save_crops_for_current_identity();
+        Application.save_info_for_current_identity();
+        case 'a':
+        exporter.begin();
         break;
     }
 }

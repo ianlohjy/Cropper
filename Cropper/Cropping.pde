@@ -7,6 +7,8 @@ class CropHandler implements ModeDelegate
      but instead let the active crop do its thing.
      */
     Crop active_crop = null;
+    
+    PVector marquee_begin_position;
 
     CropHandler()
     {
@@ -18,6 +20,16 @@ class CropHandler implements ModeDelegate
         for (Crop crop : crops)
         {
             crop.draw();
+        }
+        if(marquee_begin_position != null)
+        {
+            pushStyle();
+            noFill();
+            stroke(0, 255, 0);
+            strokeWeight(1);
+            PVector begin_point_wts = background.world_to_screen(marquee_begin_position);
+            rect(begin_point_wts.x, begin_point_wts.y, mouseX-begin_point_wts.x, mouseY - begin_point_wts.y);
+            popStyle();
         }
     }
     
@@ -49,11 +61,11 @@ class CropHandler implements ModeDelegate
 
     /* End ModeDelegate interface functions */
 
-    void new_crop(PVector position)
+    void new_crop(PVector position, boolean is_marquee)
     {
         uprintln("### Creating new crop ###");
         // Todo: deselect & close all other crops
-        Crop new_crop = new Crop(position, this.crops.size());
+        Crop new_crop = new Crop(position, this.crops.size(), is_marquee);
         this.crops.add(new_crop);
         println("Added a new crop! New size: "+this.crops.size());
 
@@ -187,9 +199,14 @@ class CropHandler implements ModeDelegate
                     }
                     break;
                 case CREATING_MODE:
-                    if (active_crop == null)
-                    {
-                        new_crop(mouse_vector);
+                    if(mode.selection_tool == LASSO){
+                        if (active_crop == null)
+                        {
+                            new_crop(mouse_vector, false);
+                        }
+                    } else if (mode.selection_tool == MARQUEE){
+                        println("Beginning marquee selection");
+                        marquee_begin_position = mouse_vector;
                     }
                     break;
                 }
@@ -197,6 +214,15 @@ class CropHandler implements ModeDelegate
 
             default:
                 break;
+            }
+        } else if (e.getAction() == 2) { // Mouse released
+            if(marquee_begin_position != null){
+                new_crop(marquee_begin_position, true);
+                active_crop.add_point(new PVector(mouse_vector.x, marquee_begin_position.y), -1);
+                active_crop.add_point(new PVector(mouse_vector.x, mouse_vector.y), -1);
+                active_crop.add_point(new PVector(marquee_begin_position.x, mouse_vector.y), -1);
+                active_crop.close();
+                marquee_begin_position = null;
             }
         }
     }
@@ -221,9 +247,12 @@ class Crop
     CropImage crop_image;
     
     int crop_index;
+    
+    boolean is_marquee = false;
 
-    Crop(PVector firstPoint, int crop_index)
+    Crop(PVector firstPoint, int crop_index, boolean is_marquee)
     {
+        this.is_marquee = is_marquee;
         this.crop_index = crop_index;
         points = new ArrayList<PVector>();
         crop_image = new CropImage(this);
@@ -244,6 +273,7 @@ class Crop
             add_point(new PVector(x, y), -1);
         }
         crop_index = json.getInt("crop_index");
+        is_marquee = json.getBoolean("is_marquee");
         crop_image.image_rotation = json.getFloat("image_rotation");
         crop_image.image_rotation_pivot_offset = new PVector(json.getFloat("image_rotation_pivot_offset_x"), json.getFloat("image_rotation_pivot_offset_y"));
         close();
@@ -260,6 +290,7 @@ class Crop
         }
         json.setJSONArray("points", points_array);
         json.setInt("crop_index", crop_index);
+        json.setBoolean("is_marquee", is_marquee);
         json.setFloat("image_rotation", crop_image.image_rotation);
         json.setFloat("image_rotation_pivot_offset_x", crop_image.image_rotation_pivot_offset.x);
         json.setFloat("image_rotation_pivot_offset_y", crop_image.image_rotation_pivot_offset.y);
@@ -443,7 +474,8 @@ class Crop
             PVector wts_coords = background.world_to_screen(points.get(0).x, points.get(0).y);
             
             int index = crop_handler.crops.indexOf(this);
-            float index_width = textWidth(Integer.toString(index)) + 5;
+            String title_string = index + (is_marquee? " (m)" : "");
+            float index_width = textWidth(title_string) + 5;
 
             fill(0);
             noStroke();
@@ -451,7 +483,7 @@ class Crop
             rect(wts_coords.x, wts_coords.y -25, index_width, 20, 20, 20, 20, 20);
             fill(255);
             textAlign(CENTER, CENTER);
-            text(index, wts_coords.x, wts_coords.y -27);
+            text(title_string, wts_coords.x, wts_coords.y -27);
             
             // Show editing gizmos if we're selected (but aren't open - that looks weird)
             if(crop_handler.active_crop == this && state != OPEN)

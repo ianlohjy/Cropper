@@ -53,8 +53,8 @@ class Background
         text("DRAG & DROP AN IMAGE OR FOLDER TO BEGIN", width/2-100, height/2-200, 200, 200);
         textAlign(CENTER, TOP);
         textSize(12);
-        text("Arrow Keys - Nudge Image\nLeft/Right Mouse - Create/ Finish Shape\nMouse Wheel - Zoom & Pan\nF - Frame Image\n[ ] - Prev/Next Image\n\nHold Shift to increase nudge & zoom amount", 
-            width/2-125, height/2-50, 250, 200);
+        text("Arrow Keys - Nudge Image\nLeft/Right Mouse - Create/ Finish Shape\nMouse Wheel - Zoom & Pan\nF - Frame Image\nLEFT ARROW /  RIGHT ARROW - Prev/Next Image\n\nHold Shift to increase nudge & zoom amount\n\n'n' -> Add Crop Mode\n'v' -> Selection Mode\n'e' -> Edit Mode\n\nHold shift for Marquee select, otherwise is Lasso\n\n'0' -> Back to Start\n'o' -> Open Specific Image Crops", 
+            width/2-125, height/2-50, 300, 400);
         popStyle();
 
         // Background_image
@@ -78,27 +78,8 @@ class Background
             image(background_image, 0, 0);
         }
 
-        /*
-    pushStyle();
-         noFill();
-         stroke(0);
-         strokeWeight(1);
-         for(int l=0; l<100; l++)
-         {
-         line(l*10,0,l*10,1000);
-         }
-         popStyle();
-         */
         popMatrix();
         popStyle();
-
-        /*
-    fill(255,0,0);
-         PVector converted_coords = screen_to_world(mouseX, mouseY);
-         text(mouseX+ " " + mouseY, mouseX, mouseY-50);
-         text(bg_transform.x + " " + bg_transform.y + " " + bg_transform.z, mouseX, mouseY-35);
-         text(converted_coords.x + " " + converted_coords.y, mouseX, mouseY-20);
-         */
 
         // Show image information
         pushStyle();
@@ -150,7 +131,7 @@ class Background
         // Converts world space coordinates into screen space position
         return new PVector((x*bg_transform.z)+bg_transform.x, (y*bg_transform.z)+bg_transform.y);
     }
-    
+
     float world_to_screen(float scale)
     {
         // Converts world space coordinates into screen space position
@@ -243,31 +224,21 @@ class Background
     // Mouse Events
     void mouse_events(MouseEvent e)
     {
-        // Mouse Pressed
-        if (e.getAction() == 1)
-        {
-            // Middle Mouse
-            if (e.getButton() == 3)
+        if (mode.current_mode == PANNING_MODE) {
+            // Mouse Pressed
+            if (e.getAction() == 1)
             {
                 pan_start();
             }
-        }
 
-        // Mouse Released
-        if (e.getAction() == 2)
-        {
-            // Middle Mouse
-            if (e.getButton() == 3)
+            // Mouse Released
+            if (e.getAction() == 2)
             {
                 pan_stop();
             }
-        }
 
-        // Mouse Dragged
-        if (e.getAction() == 4)
-        {
-            // Middle Mouse
-            if (e.getButton() == 3)
+            // Mouse Dragged
+            if (e.getAction() == 4)
             {
                 pan_move();
             }
@@ -300,21 +271,22 @@ class Background
         {
             switch(e.getKeyCode())
             {
-            case 40: // DOWN
-                move(0, nudge_amt);
-                break;
-
-            case 39: // RIGHT
-                move(nudge_amt, 0);
-                break;
-
-            case 38: // UP
-                move(0, -nudge_amt);
-                break;
-
-            case 37: // LEFT
-                move(-nudge_amt, 0);
-                break;
+                // These weren't used much - we're using LEFT/RIGHT for image changes now.
+                /*case 40: // DOWN
+                 move(0, nudge_amt);
+                 break;
+                 
+                 case 39: // RIGHT
+                 move(nudge_amt, 0);
+                 break;
+                 
+                 case 38: // UP
+                 move(0, -nudge_amt);
+                 break;
+                 
+                 case 37: // LEFT
+                 move(-nudge_amt, 0);
+                 break; */
 
             case 16: // SHIFT
                 nudge_amt = nudge_max;
@@ -325,14 +297,14 @@ class Background
                 frame_background();
                 break;
 
-            // This i=has moved to Application
-            //case 91: // [
-            //    prev_background();
-            //    break;
+                // This i=has moved to Application
+                //case 91: // [
+                //    prev_background();
+                //    break;
 
-            //case 93: // ]
-            //    next_background();
-            //    break;
+                //case 93: // ]
+                //    next_background();
+                //    break;
 
             default:
                 break;
@@ -364,7 +336,7 @@ class Background
     {  
         load_background(cur_image_position-1);
     }
-    
+
     void set_background_image(PImage image)
     {
         background_image = image;

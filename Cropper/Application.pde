@@ -2,6 +2,8 @@ import java.util.LinkedHashMap;
 
 _Application Application = new _Application();
 
+ArrayList<File> image_files_to_process;
+
 class _Application
 {
     // original_file_name as key
@@ -11,21 +13,21 @@ class _Application
     
     int current_identity_index = 0;
     
+    int total_new_identities_to_process = 0;
+    int remaining_new_identities_to_process = 0;
+    
+    String json_string_at_load = "";
+    
+    boolean is_busy = false;
+    String busy_message = "";
+    
     public _Application(){
-        
     }
     
     void add_new_identities(ArrayList<File> image_files)
     {
-        for(File file : image_files){
-            if(identities.containsKey(file.getName())){
-                // ignore
-                println("Ignored an added entity - already exists in HashMap: "+file.getName());
-            } else {
-                println("Added new (fresh) entity to HashMap: "+file.getName());
-                identities.put(file.getName(), new CropIdentity(file));
-            }
-        }
+        image_files_to_process = image_files;
+        thread("Application_create_new_identities");
     }
     
     void add_existing_identities(ArrayList<CropIdentity> new_identities)
@@ -53,10 +55,23 @@ class _Application
     }
     
     void display_identity(CropIdentity identity){
+        
+        if(current_identity != null){
+            if(current_identity != identity){
+                if(AUTOSAVE && changes_made()){
+                    uprintln("Changes were made, autosaving...");
+                    save_info_for_current_identity();
+                } else {
+                    uprintln("No changes were made, skipping autosave.");   
+                }
+            }
+        }
+        
         println("Displaying identity: "+identity.original_image_file_name);
         crop_handler.set_crops(identity.crops);
-        background.set_background_image(loadImage(identity.base_image_path()));
         current_identity = identity;
+        
+        background.set_background_image(loadImage(Application.current_identity.base_image_path()));
         
         // find the index
         ArrayList keys = new ArrayList(identities.keySet());
@@ -67,13 +82,41 @@ class _Application
                 break;
             }
         }
+        
+        json_string_at_load = current_identity.get_crops_json_string();
     }
     
-    void save_crops_for_current_identity()
+    boolean changes_made(){
+        return !(json_string_at_load.equals(current_identity.get_crops_json_string()));
+    }
+    
+    void save_info_for_current_identity()
     {
-        // TODO
-        current_identity.save_to_output_directory();
-        println("Saved identity "+current_identity.image_id);
+        Application.current_identity.save_info();   
+    }
+    
+    void save_images_for_current_identity()
+    {
+        Application.current_identity.save_images();   
+    }
+    
+    void save_all_images(){
+        
+    }
+    
+    void begin_busy(String message){
+        if(is_busy){
+            busy_message = busy_message+"\n&\n"+message;
+        } else {
+            busy_message = message;
+        }
+        is_busy = true;
+        busy_message = message;
+    }
+    
+    void end_busy(){
+        is_busy = false;
+        busy_message = "(message not set)";
     }
     
     void next_identity()
@@ -98,7 +141,33 @@ class _Application
         }
     }
     
+    void reset_application(){    
+        current_identity_index = 0;
+        current_identity = null;
+        identities.clear();
+        background.background_image = null;
+        crop_handler.deselect();
+        crop_handler.crops = new ArrayList<Crop>();
+    }
+}
+
+// This has to be in global scope to be able to be threaded.
+void Application_create_new_identities(){
     
+    Application.begin_busy("Loading...");
+    Application.remaining_new_identities_to_process = image_files_to_process.size();
+    Application.total_new_identities_to_process = image_files_to_process.size();
+    for(File file : image_files_to_process){
+        if(Application.identities.containsKey(file.getName())){
+            // ignore
+            println("Ignored an added entity - already exists in HashMap: "+file.getName());
+        } else {
+            println("Added new (fresh) entity to HashMap: "+file.getName());
+            Application.identities.put(file.getName(), new CropIdentity(file));
+        }
+        Application.remaining_new_identities_to_process --;
+    }
+    Application.end_busy();
 }
 
 void open_identity(File folder){
@@ -137,7 +206,6 @@ void load_identities(File folder){
         
     }
 }
-
 
 
 // File Drag & Drop Handling
